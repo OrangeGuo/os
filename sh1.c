@@ -1,4 +1,5 @@
 #include <errno.h>
+#include <fcntl.h>
 #include <stdio.h>
 #include <string.h>
 #include <sys/types.h>
@@ -6,7 +7,6 @@
 #include <unistd.h>
 
 int mysys(char *command) {
-    chdir("/home/orange");
     pid_t pid;
     if (command == NULL)
         return 1;
@@ -26,17 +26,34 @@ int mysys(char *command) {
     return 0;
 }
 
-int quit(char *exit) {
-    char q[] = "exit";
-    printf("%s,%d\n", exit, strcmp(q, q));
-    if (strcmp(q, exit) != 0)
-        return 1;
+void quit(char *command) {
+    char *flag = strchr(command, '>');
+    if (flag == NULL) {
+        char *p = strtok(command, " ");
+        p = strtok(NULL, ">");
+        printf("%s\n", p);
+    } else {
+        puts(command);
 
-    return 0;
+        char *p = strtok(command, ">");
+        p=strtok(NULL, ">");
+		puts(p);
+
+        char *contents = strtok(command, " ");
+        contents = strtok(NULL, ">");
+        int fd = open(p, O_CREAT | O_RDWR, 0666);
+        dup2(fd, 1);
+
+        write(1, contents, 6);
+        close(fd);
+
+		
+    }
+    return;
 }
 int main() {
     int mysys(char *command);
-    int quit(char *exit);
+    void quit(char *command);
     while (1) {
         char command[100];
         printf("$");
@@ -51,12 +68,16 @@ int main() {
         if (strcmp(command, "exit") == 0)
             break;
         else {
-            char *p = strtok(command, " ");
+            char temp[100];
+            strcpy(temp, command);
+            char *p = strtok(temp, " ");
             if (strcmp(p, "cd") == 0) {
                 p = strtok(NULL, " ");
                 chdir(p);
             } else if (strcmp(p, "pwd") == 0) {
                 printf("current working directory: %s\n", getcwd(NULL, 0));
+            } else if (strcmp(p, "echo") == 0) {
+                quit(command);
             } else if (strcmp(p, "ls") == 0) {
                 if (strcmp(p, command) == 0) {
                     mysys(strcat(strcat(command, " "), getcwd(NULL, 0)));
