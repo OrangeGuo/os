@@ -33,19 +33,15 @@ void quit(char *command) {
         p = strtok(NULL, ">");
         printf("%s\n", p);
     } else {
-        puts(command);
 
         char *p = strtok(command, ">");
         p=strtok(NULL, ">");
-		puts(p);
 
         char *contents = strtok(command, " ");
         contents = strtok(NULL, ">");
-        int fd = open(p, O_CREAT | O_RDWR, 0666);
-        dup2(fd, 1);
-
-        write(1, contents, 6);
-        close(fd);
+		FILE* file=fopen(p, "a");
+		fprintf(file, "%s", contents);
+		fclose(file);
 
 		
     }
