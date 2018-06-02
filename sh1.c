@@ -35,15 +35,13 @@ void quit(char *command) {
     } else {
 
         char *p = strtok(command, ">");
-        p=strtok(NULL, ">");
+        p = strtok(NULL, ">");
 
         char *contents = strtok(command, " ");
         contents = strtok(NULL, ">");
-		FILE* file=fopen(p, "a");
-		fprintf(file, "%s", contents);
-		fclose(file);
-
-		
+        FILE *file = fopen(p, "a");
+        fprintf(file, "%s", contents);
+        fclose(file);
     }
     return;
 }
