@@ -1,6 +1,7 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <sys/types.h>
 #include <sys/wait.h>
@@ -26,28 +27,34 @@ int mysys(char *command) {
     return 0;
 }
 
-void quit(char *command) {
+void redirection(char *command) {
+    int pid;
     char *flag = strchr(command, '>');
     if (flag == NULL) {
         char *p = strtok(command, " ");
         p = strtok(NULL, ">");
         printf("%s\n", p);
     } else {
-
-        char *p = strtok(command, ">");
-        p = strtok(NULL, ">");
-
-        char *contents = strtok(command, " ");
-        contents = strtok(NULL, ">");
-        FILE *file = fopen(p, "a");
-        fprintf(file, "%s", contents);
-        fclose(file);
+        pid = fork();
+        if (pid == 0) {
+            char *p = strtok(command, ">");
+            p = strtok(NULL, ">");
+            char *contents = strtok(command, " ");
+            contents = strtok(NULL, ">");
+            int fd = open(p, O_CREAT | O_RDWR, 0666);
+            dup2(fd, 1);
+            close(fd);
+            /* write(1, "", 0); */
+            puts(contents);
+            exit(0);
+        }
+        wait(NULL);
     }
     return;
 }
 int main() {
     int mysys(char *command);
-    void quit(char *command);
+    void redirection(char *command);
     while (1) {
         char command[100];
         printf("\033[32m$\033[0m");
@@ -58,8 +65,8 @@ int main() {
             index++;
             command[index] = getchar();
         }
-        if (index == 0)
-            continue;
+		if(index==0)
+			continue;
         command[index] = '\0';
         if (strcmp(command, "exit") == 0)
             break;
@@ -73,7 +80,7 @@ int main() {
             } else if (strcmp(p, "pwd") == 0) {
                 printf("\033[34m%s\033[0m\n", getcwd(NULL, 0));
             } else if (strcmp(p, "echo") == 0) {
-                quit(command);
+                redirection(command);
             } else if (strcmp(p, "ls") == 0) {
                 if (strcmp(p, command) == 0) {
                     mysys(strcat(strcat(command, " "), getcwd(NULL, 0)));
