@@ -50,7 +50,7 @@ int main() {
     void quit(char *command);
     while (1) {
         char command[100];
-        printf("$");
+        printf("\033[32m$\033[0m");  
         // fgets(command,99,stdin);
         int index = 0;
         command[index] = getchar();
@@ -69,7 +69,7 @@ int main() {
                 p = strtok(NULL, " ");
                 chdir(p);
             } else if (strcmp(p, "pwd") == 0) {
-                printf("current working directory: %s\n", getcwd(NULL, 0));
+                printf("\033[34m%s\033[0m\n", getcwd(NULL, 0));
             } else if (strcmp(p, "echo") == 0) {
                 quit(command);
             } else if (strcmp(p, "ls") == 0) {
