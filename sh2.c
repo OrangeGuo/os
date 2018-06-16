@@ -41,6 +41,8 @@ void redirection(char *command) {
             p = strtok(NULL, ">");
             char *contents = strtok(command, " ");
             contents = strtok(NULL, ">");
+            while (*p == ' ')
+                p++;
             int fd = open(p, O_CREAT | O_RDWR, 0666);
             dup2(fd, 1);
             close(fd);
@@ -57,6 +59,7 @@ int main() {
     void redirection(char *command);
     while (1) {
         char command[100];
+        printf("\033[34m%s\033[0m", getcwd(NULL, 0));
         printf("\033[32m$\033[0m");
         // fgets(command,99,stdin);
         int index = 0;
@@ -65,8 +68,8 @@ int main() {
             index++;
             command[index] = getchar();
         }
-		if(index==0)
-			continue;
+        if (index == 0)
+            continue;
         command[index] = '\0';
         if (strcmp(command, "exit") == 0)
             break;
