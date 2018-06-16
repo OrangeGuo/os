@@ -1,0 +1,37 @@
+MODULE main
+VAR
+	demo:elevator(idle);
+SPEC
+	(AG demo.state=idle -> AF demo.state=idle);
+
+MODULE elevator(init_state)
+VAR 
+	state : {idle,upward,downward,error,manual};
+	location: {top,ground};
+	call :	{up,down,null};
+ASSIGN
+	init(state):=init_state;
+	next(state):=
+		case
+			call=up&state=idle:upward;
+			call=down&location=top:downward;
+			state=upward|state=downward:idle;
+			TRUE:state;
+		esac;
+	init(call):=up;
+	next(call):=
+		case
+			call=up|state=upward|call=down|state=downward:null;
+			location=top&state!=downward:down;
+			TRUE:up;
+		esac;
+	init(location):=ground;
+	next(location):=
+		case
+			state=upward:top;
+			state=downward:ground;
+			TRUE:location;
+		esac;
+			
+			
+			
