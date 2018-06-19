@@ -27,6 +27,44 @@ int mysys(char *command) {
     return 0;
 }
 
+void mypipe(char *command) {
+    char *p = strtok(command, "|");
+    int pid, fd[2];
+    pipe(fd);
+    char buf[128];
+    pid = fork();
+    if (pid == 0) {
+        dup2(fd[1], 1);
+        close(fd[0]);
+        close(fd[1]);
+        execl("/bin/sh", "sh", "-c", p, NULL);
+        _exit(127);
+    }
+    wait(NULL);
+    p = strtok(NULL, "|");
+    while (p != NULL) {
+        printf("running %s...\n", p);
+        pid = fork();
+        if (pid == 0) {
+            dup2(fd[0], 0);
+            close(fd[0]);
+            close(fd[1]);
+            dup2(fd[1], 1);
+            close(fd[0]);
+            close(fd[1]);
+            execl("/bin/sh", "sh", "-c", p, NULL);
+            _exit(127);
+        }
+        wait(NULL);
+        p = strtok(NULL, "|");
+    }
+    dup2(fd[0], 0);
+    close(fd[0]);
+    close(fd[1]);
+
+    printf("Receive:\n");
+    return;
+}
 void redirection(char *command) {
     int pid;
     char *flag = strchr(command, '>');
@@ -77,7 +115,9 @@ int main() {
             char temp[100];
             strcpy(temp, command);
             char *p = strtok(temp, " ");
-            if (strcmp(p, "cd") == 0) {
+            if (strchr(command, '|') != NULL) {
+                mypipe(command);
+            } else if (strcmp(p, "cd") == 0) {
                 p = strtok(NULL, " ");
                 chdir(p);
             } else if (strcmp(p, "pwd") == 0) {
